@@ -14,36 +14,66 @@ public class MainActivity extends AppCompatActivity {
 
     Button play;
     Button pause;
-    MediaPlayer mp;
+    private MediaPlayer mediaPlayer;
+    /** below we set the mediaPlayer.setOnCompletionListener as a global object here so that we would not need to create
+     * it every time we need it */
+    private MediaPlayer.OnCompletionListener onCompletionListener = new MediaPlayer.OnCompletionListener () {
+        @Override
+        public void onCompletion(MediaPlayer mp) {
+
+        }
+    };
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate ( savedInstanceState );
         setContentView ( R.layout.activity_main );
 
         // creating MediaPlayer object
-        mp = MediaPlayer.create ( this,R.raw.music );
+        mediaPlayer = MediaPlayer.create ( this, R.raw.music );
         // casting play and pause buttons
-        play = (Button)findViewById ( R.id.playButton );
-        pause = (Button)findViewById ( R.id.pauseButton );
-
+        play = (Button) findViewById ( R.id.playButton );
+        pause = (Button) findViewById ( R.id.pauseButton );
         // onClickListener for the playButton
         play.setOnClickListener ( new View.OnClickListener () {
             @Override
             public void onClick(View v) {
+                releaseMediaPlayer ();
+                mediaPlayer = MediaPlayer.create ( MainActivity.this,R.raw.music );
+                 mediaPlayer.start ();
+                // Setting up onCompletion message to the mediaPlay, which shows message after the audio file is finished
+                mediaPlayer.setOnCompletionListener ( onCompletionListener );
 
-                Log.v ("This activity","playing the mp3............");
-                mp.start();
-                Toast.makeText ( MainActivity.this,"Playing the audio",Toast.LENGTH_SHORT ).show ();
+
             }
         } );
         // onClickListener for the pauseButton
         pause.setOnClickListener ( new View.OnClickListener () {
             @Override
             public void onClick(View v) {
-                Log.v ( "This Activity","Pause the sound......." );
-                mp.pause ();
-                Toast.makeText ( MainActivity.this,"Pausing the audio",Toast.LENGTH_SHORT ).show ();
+                mediaPlayer.pause ();
+                Toast.makeText ( MainActivity.this, "Pausing the audio", Toast.LENGTH_SHORT ).show ();
             }
+
         } );
     }
+
+    @Override
+    protected void onStop() {
+        super.onStop ();
+        releaseMediaPlayer ();
+        // when the activity is stopped, release the mediaPlayer
+        // because we wont be playing the sound any more
+    }
+    /** clean up the media player by releasing its resources
+     * so we should create a method to do so*/
+    public void releaseMediaPlayer() {
+            if (mediaPlayer != null) {
+                // set the mediaPlayer to null so that the mediaPlayer cant play an audio file at the moment
+                mediaPlayer.release ();
+                mediaPlayer = null;
+            }
+
+    }
 }
+
+
